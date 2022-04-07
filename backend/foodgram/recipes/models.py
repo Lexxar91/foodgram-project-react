@@ -71,7 +71,7 @@ class Recipe(models.Model):
         ordering = ('-pub_date',)
     
     def __str__(self):
-        return self.text[:6]
+        return self.text
 
 
 class AmountIngredient(models.Model):
@@ -104,6 +104,27 @@ class AmountIngredient(models.Model):
     def __str__(self):
         return f'{self.ingredient}'
 
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shopping_user',
+        verbose_name='user',)
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='shopping_recipe',
+        verbose_name='recipe',)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe',),
+                name='unique_shop'),)
+
+    def __str__(self):
+        return f'{self.recipe}'
+
 
 class Favorite(models.Model):
     user = models.ForeignKey(
@@ -129,23 +150,3 @@ class Favorite(models.Model):
         return f'{self.recipe}'
 
 
-class ShoppingCart(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='shopping_user',
-        verbose_name='user',)
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='shopping_recipe',
-        verbose_name='recipe',)
-
-    class Meta:
-        constraints = (
-            models.UniqueConstraint(
-                fields=('user', 'recipe',),
-                name='unique_shop'),)
-
-    def __str__(self):
-        return f'{self.recipe}'
