@@ -59,13 +59,14 @@ class Recipe(models.Model):
         Tag,
         verbose_name='tag',
         related_name='tag_recipe',
-        blank=True
+        
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='ingridient',
         related_name='recipe',
-        blank=True
+        through='AmountIngredient',
+        
     )
     class Meta:
         ordering = ('-pub_date',)
@@ -81,7 +82,7 @@ class AmountIngredient(models.Model):
         on_delete=models.CASCADE,
         related_name='recipe_ingredient'
     )
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name='ingredient_recipe',
@@ -96,7 +97,7 @@ class AmountIngredient(models.Model):
     class Meta:
         constraints=(
             models.UniqueConstraint(
-                fields=('recipe', 'ingredient',),
+                fields=('recipe', 'ingredients',),
                 name='unique_ingred_recipe'
             ),
         )
