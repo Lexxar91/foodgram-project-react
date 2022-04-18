@@ -1,8 +1,13 @@
+from django.forms import ValidationError
 from rest_framework import serializers
+from django.contrib.auth.password_validation import password_changed
+from djoser.serializers import UserCreateSerializer as DjoserCreateUser, UserSerializer
 from django.db.models import F
 import webcolors
 from drf_extra_fields.fields import Base64ImageField
-from .variables import MAX_LEN_FOR_USERNAME, MIN_LEN_FOR_USERNAME
+
+from .validators import check_pass
+from .variables import ERROR_CURRENT_PASSWORD, MAX_LEN_FOR_USERNAME, MIN_LEN_FOR_USERNAME
 from recipes.models import AmountIngredient, Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Follow, User
 
@@ -17,17 +22,23 @@ class ErrorResponse:
     USERNAME_EXISTS = 'Пользователь с таким именем уже существует'
     EMAIL_EXISTS = 'Этот адрес электронной почты уже зарегестрирован'
 
-class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+class UserCreateSerializer(DjoserCreateUser):
+    class Meta(DjoserCreateUser.Meta):
+        fields = ('email','username','first_name','last_name','password')
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = (
+            'email',
             'id',
+            'username',
             'first_name',
             'last_name',
-            'username',
-            'is_subscribed'
+            'is_subscribed',
+            'password',
         )
 
     def get_is_subscribed(self, obj):
@@ -171,17 +182,12 @@ class ForFollowFieldsSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    email = serializers.ReadOnlyField()
-    id = serializers.ReadOnlyField()
-    username = serializers.ReadOnlyField()
-    first_name = serializers.ReadOnlyField()
-    last_name = serializers.ReadOnlyField()
-    is_subscribed = serializers.SerializerMethodField(many=True)
+    
     recipes = ForFollowFieldsSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
     
     class Meta:
-        model = Follow
+        model = User
         fields = ( 
             'email',
             'id',
@@ -192,8 +198,7 @@ class FollowSerializer(serializers.ModelSerializer):
             'recipes',
             'recipes_count',
         )
-    def get_is_subscribed(self, obj):
-        return Follow.objects.filter(user=obj.user, author=obj.author)
+   
     
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
@@ -202,5 +207,27 @@ class FollowSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('name', 'measurement_unit',)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(max_length=150)
+    new_password = serializers.CharField(max_length=159)
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['new_password'])
+        password_changed(validated_data['new_password'], user=instance)
+        instance.save()
+
+        return instance
+
+    def validate_current_password(self, value):
+        user = self.context.get('request').user 
+        if user.check_password(value):
+            return value
+        raise ValidationError(ERROR_CURRENT_PASSWORD)
+
+    def validate_new_password(self, value):
+        return check_pass(value)
+
+
 

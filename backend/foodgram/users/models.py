@@ -1,19 +1,28 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 class User(AbstractUser):
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
     email = models.EmailField(
-        'email',
         unique=True,
-        max_length=254
+        max_length=254,
+        verbose_name='Почта'
     )
     username = models.CharField(
         max_length=150,
-        unique=True
+        unique=True,
+        verbose_name='Юзернейм'
     )
+    first_name = models.CharField(
+        max_length=150,
+        verbose_name='Имя')
+    
+    last_name = models.CharField(
+        max_length=150,
+        verbose_name='Фамилия')
+    
     password = models.CharField(
+        verbose_name='Пароль',
         max_length=150
     )
     def __str__(self):
