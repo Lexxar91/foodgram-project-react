@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'djoser',
     'rest_framework.authtoken',
+    'django_filters',
     'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
@@ -131,21 +132,24 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        #'rest_framework.permissions.IsAuthenticated', 
-    ],
-
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-       # 'rest_framework.authentication.TokenAuthentication',
-    ],
-} 
-
-DJOSER = {
-    'SERIALIZERS': {
-         'user_create': 'api.serializers.UserRegistrationSerializer',
-         #'user': 'api.serializers.CustomUserSerializer',
-    }
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_PAGINATION_CLASS':
+        'api.pagination.CustomPagination',
+        'PAGE_SIZE': 6,
+    'SEARCH_PARAM': 'name',
 }
+
+# DJOSER = {
+#     'SERIALIZERS': {
+#          'user_create': 'api.serializers.UserRegistrationSerializer',
+#          #'user': 'api.serializers.CustomUserSerializer',
+#     }
+# }
 
 
 #APPEND_SLASH=False
