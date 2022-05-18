@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ingredient, IngredientsInRecipe, Recipe, Tag
+from .models import Favorite, Ingredient, IngredientsInRecipe, Recipe, ShoppingCart, Tag
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -14,6 +14,7 @@ class RecipeAdmin(admin.ModelAdmin):
     def favorite_count(self, obj):
         return obj.favorite_recipe.count()
 
+
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -23,15 +24,25 @@ class IngredientAdmin(admin.ModelAdmin):
     list_filter = ('name',)
 
 
-
 class TagAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'color', 'slug',)
 
+
 class IngredientsInRecipeAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'ingredient', 'amount',)
+
+
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe')
+
+
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe')
 
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(IngredientsInRecipe, IngredientsInRecipeAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
+admin.site.register(Favorite, FavoriteAdmin)

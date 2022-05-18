@@ -1,30 +1,17 @@
-from djoser.serializers import UserSerializer
-
-
-from rest_framework import serializers
-
-
 import webcolors
+from django.conf import settings
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-
-
-from recipes.models import Favorite, ShoppingCart, IngredientsInRecipe
-
-from .variables import (
-    ALREADY_SIGNED,
-    CANT_SUBSCRIBE_TO_YOURSELF,
-    FORBIDDEN_NAME,
-    MAX_LEN_FOR_USERNAME,
-    MIN_LEN_FOR_USERNAME,
-    MISSING_EMAIL,
-    MISSING_USERNAME,
-)
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from users.models import Follow, User
 
 
 class CurrentUserSerializer(UserSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='get_is_subscribed')
 
     class Meta:
         model = User
@@ -43,12 +30,12 @@ class CurrentUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        if user is None or user.is_anonymous:
+        if user.is_anonymous or user == obj:
             return False
         return Follow.objects.filter(
             user=user,
             author=obj.id
-        )
+        ).exists()
 
     def create(self, validated_data):
         password = validated_data.pop('password')
@@ -60,22 +47,22 @@ class CurrentUserSerializer(UserSerializer):
 
     def validate_username(self, value):
         if value == 'me':
-            raise serializers.ValidationError(FORBIDDEN_NAME)
-        elif value is None or value == '':
-            raise serializers.ValidationError(MISSING_USERNAME)
+            raise serializers.ValidationError(settings.FORBIDDEN_NAME)
+        elif not value:
+            raise serializers.ValidationError(settings.MISSING_USERNAME)
         return value
 
     def validate_username_len(self, value):
-        if len(value) < MIN_LEN_FOR_USERNAME:
+        if len(value) < settings.MIN_LEN_FOR_USERNAME:
             raise serializers.ValidationError(
-                f'Минимальная длина {MIN_LEN_FOR_USERNAME} символов')
-        elif len(value) > MAX_LEN_FOR_USERNAME:
+                f'Минимальная длина {settings.MIN_LEN_FOR_USERNAME} символов')
+        elif len(value) > settings.MAX_LEN_FOR_USERNAME:
             raise serializers.ValidationError(
-                f'Максимальное количество символов {MAX_LEN_FOR_USERNAME}')
+                f'(Максимальное количество символов {settings.MAX_LEN_FOR_USERNAME}')
 
     def validate_email(self, email):
         if email is None or email == "":
-            raise serializers.ValidationError(MISSING_EMAIL)
+            raise serializers.ValidationError(settings.MISSING_EMAIL)
         return email
 
 
@@ -87,7 +74,7 @@ class Hex2NameColor(serializers.Field):
         try:
             data = webcolors.hex_to_name(data)
         except ValueError:
-            raise serializers.ValidationError('Для этого цвета нет имени')
+            raise serializers.ValidationError(settings.NOT_NAME_FOR_THIS_COLOR)
         return data
 
 
@@ -143,8 +130,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         read_only=True, many=True
     )
     image = Base64ImageField()
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='get_is_favorited')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
@@ -165,7 +154,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return model.objects.filter(user=request.user, recipe=obj)
+        return model.objects.filter(user=request.user, recipe=obj).exists()
 
     def get_is_favorited(self, obj):
         return self.in_list(obj, Favorite)
@@ -180,9 +169,11 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField()
     first_name = serializers.ReadOnlyField()
     last_name = serializers.ReadOnlyField()
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='get_is_subscribed')
+    recipes = serializers.SerializerMethodField(method_name='get_recipes')
+    recipes_count = serializers.SerializerMethodField(
+        method_name='get_recipes_count')
 
     class Meta:
         model = Follow
@@ -229,6 +220,14 @@ class SubscribeSerializer(serializers.ModelSerializer):
             'author',
         )
 
+        validators = (
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author',),
+                message='Вы уже подписаны на этого автора'
+            ),
+        )
+
     def to_representation(self, instance):
         request = self.context.get('request')
         context = {'request': request}
@@ -244,15 +243,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
         if user == author:
             raise serializers.ValidationError(
-                CANT_SUBSCRIBE_TO_YOURSELF
+                settings.CANT_SUBSCRIBE_TO_YOURSELF
             )
-
-        if Follow.objects.filter(user=user, author=author):
-            raise serializers.ValidationError(
-                f'{ALREADY_SIGNED} {author}.'
-            )
-
-        return data
 
     def create(self, validated_data):
         user = validated_data['user']
@@ -293,7 +285,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             amount = ingredient['amount']
             ingredient = ingredient['id']
-            ingredients, created = IngredientsInRecipe.objects.get_or_create(
+            IngredientsInRecipe.objects.get_or_create(
                 recipe=recipe,
                 ingredient=ingredient,
                 amount=amount

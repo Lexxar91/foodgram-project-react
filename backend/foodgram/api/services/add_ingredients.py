@@ -1,10 +1,10 @@
-from recipes.models import AmountIngredient
+from recipes.models import IngredientsInRecipe
 
 
 def add_ingredients_to_recipe(recipe, ingredients):
-    AmountIngredient.objects.bulk_create(
+    IngredientsInRecipe.objects.bulk_create(
             [
-                AmountIngredient(
+                IngredientsInRecipe(
                     recipe=recipe,
                     ingredient_id=ingredient['ingredients']['id'],
                     amount=ingredient['amount'],

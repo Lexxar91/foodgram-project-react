@@ -1,12 +1,13 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 
 class User(AbstractUser):
     email = models.EmailField(
         unique=True,
         max_length=254,
-        verbose_name='Почта'
+        verbose_name='Почта',
+        help_text='Введите адрес электронной почты'
     )
 
     USERNAME_FIELD = 'email'
@@ -37,12 +38,14 @@ class Follow(models.Model):
         related_name='follower',
         on_delete=models.CASCADE,
         verbose_name='Подписчик',
+        help_text='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
         verbose_name='Автор постов',
+        help_text='Автор постов'
     )
 
     class Meta:

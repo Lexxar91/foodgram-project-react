@@ -1,37 +1,26 @@
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status, views
-from rest_framework.validators import ValidationError
-from rest_framework.generics import ListAPIView
-
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
+                            ShoppingCart, Tag)
+from rest_framework import status, views, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
+from rest_framework.validators import ValidationError
+from users.models import Follow, User
 
 from api.pagination import CustomPagination
+from services.utils import convert_txt
 
 from .filters import IngredientFilter, TagFilter
-from recipes.models import Favorite, ShoppingCart
-
-
-from recipes.models import Recipe
-
-from .permissions import IsOwnerOrReadOnly
-from recipes.models import Ingredient, Tag
-
-from users.models import Follow
-from .serializers import (
-    AddRecipeSerializer,
-    IngredientSerializer,
-    RecipeSerializer,
-    RecipesForFavoriteSerializers,
-    SubscribeSerializer,
-    SubscriptionSerializer,
-    TagSerializer,
-)
 from .mixins import RetrieveListMixins
-from users.models import User
+from .permissions import IsOwnerOrReadOnly
+from .serializers import (AddRecipeSerializer, IngredientSerializer,
+                          RecipeSerializer, RecipesForFavoriteSerializers,
+                          SubscribeSerializer, SubscriptionSerializer,
+                          TagSerializer)
 
 
 class TagViewSet(RetrieveListMixins):
@@ -71,8 +60,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             return self.add_recipe(Favorite, request, pk)
-        else:
-            return self.delete_recipe(Favorite, request, pk)
+        return self.delete_recipe(Favorite, request, pk)
 
     @action(
         detail=True,
@@ -82,8 +70,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
             return self.add_recipe(ShoppingCart, request, pk)
-        else:
-            return self.delete_recipe(ShoppingCart, request, pk)
+        return self.delete_recipe(ShoppingCart, request, pk)
 
     def add_recipe(self, model, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -100,6 +87,20 @@ class RecipeViewSet(viewsets.ModelViewSet):
         obj = get_object_or_404(model, recipe=recipe, user=user)
         obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,)
+    )
+    def download_shopping_cart(self, request):
+        ingredients = IngredientsInRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).order_by(
+            'ingredient__name'
+        ).annotate(ingredient_total=Sum('amount'))
+        return convert_txt(ingredients)
 
 
 class SubscriptionViewSet(ListAPIView):

@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 #from api.serializers import CustomUserSerializer
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,10 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vs9a)!)_$k5-g09s&k%^@ibb2u8b6&0(i*_obifq29zu9z66-+'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(os.environ.get('DEBUG'))
 
 ALLOWED_HOSTS = []
 
@@ -85,8 +89,12 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('POSTGRES_USER'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
 
@@ -150,7 +158,7 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    "LOGIN_FIELD": 'email',
+    'LOGIN_FIELD': 'email',
     'USER_ID_FIELD': 'id',
     'PASSWORD_RESET_CONFIRM_URL': 'set_password/{uid}/{token}',
     "SEND_ACTIVATION_EMAIL": False,
@@ -175,3 +183,39 @@ DJOSER = {
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
     }
 }
+SHOPPING_CART_FILE_NAME = 'shopping_list.txt'
+
+# Минимальное количество символов для username
+MIN_LEN_FOR_USERNAME = 5
+
+# Максимальная количество символов для username
+MAX_LEN_FOR_USERNAME = 150
+
+# Сообщение об ошибки пароля
+ERROR_MESSAGE_PASSWORD = 'Пароль не может быть пустым или меньше четырех символов.'
+
+# Неверный текущий пароль
+ERROR_CURRENT_PASSWORD = 'Текущий пароль указан не верно!'
+
+# Email нету в базе данных
+NOT_EMAIl_IN_DB = 'Такой почты нет в базе данных!.'
+
+# Неверный пароль для пользователя с указанной почтой
+NOT_TRUE_PASSWORD = 'Не верный пароль для пользователя с указанной почтой!'
+
+# Запрещено подписаваться на самого себя
+CANT_SUBSCRIBE_TO_YOURSELF = 'Нельзя подписываться на самого себя!'
+
+# Уже подписан на этого пользователя
+ALREADY_SIGNED = 'Вы уже подписаны на пользователя'
+
+# Минимальное время приготовления
+MIN_COOKING_TIME = 'Время приготовления не может быть меньше 1-ой минуты!'
+
+FORBIDDEN_NAME = 'Это имя не может быть использовано!'
+
+MISSING_USERNAME = 'Для аутентификации требуется ввести имя пользователя'
+
+MISSING_EMAIL = 'Для авторизации требуется ввести электронную почту'
+
+NOT_NAME_FOR_THIS_COLOR = 'Для этого цвета нет имени'
