@@ -20,6 +20,7 @@ class User(AbstractUser):
 
     class Meta:
         verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
         ordering = ('username',)
         constraints = (
             models.UniqueConstraint(
@@ -57,7 +58,9 @@ class Follow(models.Model):
             check=models.Q(user=models.F('user_author')),
             name='check_user',
         ),
-
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+    
     def __str__(self):
         return (f'{self.user.username} подписывается на автора '
                 f'{self.author.username}')

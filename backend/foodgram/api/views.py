@@ -11,16 +11,15 @@ from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 from users.models import Follow, User
 
+from api.filters import IngredientFilter, TagFilter
+from api.mixins import RetrieveListMixins
 from api.pagination import CustomPagination
-from services.utils import convert_txt
-
-from .filters import IngredientFilter, TagFilter
-from .mixins import RetrieveListMixins
-from .permissions import IsOwnerOrReadOnly
-from .serializers import (AddRecipeSerializer, IngredientSerializer,
-                          RecipeSerializer, RecipesForFavoriteSerializers,
-                          SubscribeSerializer, SubscriptionSerializer,
-                          TagSerializer)
+from api.permissions import IsOwnerOrReadOnly
+from api.serializers import (AddRecipeSerializer, IngredientSerializer,
+                             RecipeSerializer, RecipesForFavoriteSerializers,
+                             SubscribeSerializer, SubscriptionSerializer,
+                             TagSerializer)
+from api.utils import convert_txt
 
 
 class TagViewSet(RetrieveListMixins):

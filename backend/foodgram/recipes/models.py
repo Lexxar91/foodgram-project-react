@@ -12,18 +12,19 @@ class Tag(models.Model):
         db_index=True
     )
     color = models.CharField(
-        verbose_name='color',
+        verbose_name='Цвет',
         max_length=30,
         help_text='Выберите цвет тега'
     )
     slug = models.CharField(
-        verbose_name='slug',
+        verbose_name='Слаг',
         max_length=30,
         help_text='Введите слаг'
     )
 
     class Meta:
         verbose_name = 'Тег'
+        verbose_name_plural = 'Тэги'
         ordering = ('name',)
         constraints = (
             models.UniqueConstraint(
@@ -48,6 +49,7 @@ class Ingredient(models.Model):
 
     class Meta:
         verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
         ordering = ('name',)
         constraints = (
             models.UniqueConstraint(
@@ -86,7 +88,11 @@ class Recipe(models.Model):
         verbose_name='картинка',
         upload_to='recipes/',
         blank=True)
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name='pub_date')
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата',
+        help_text='Дата публикации'
+    )
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Тэги',
@@ -105,6 +111,8 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ('-pub_date',)
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.text[:15]
@@ -137,6 +145,8 @@ class IngredientsInRecipe(models.Model):
                 name='unique_ingred_recipe'
             ),
         )
+        verbose_name = 'Ингредиенты рецепта'
+        verbose_name_plural = 'Ингредиенты рецептов'
 
     def __str__(self):
         return f'{self.ingredient} и {self.recipe}'
@@ -165,6 +175,8 @@ class Favorite(models.Model):
                 name='unique_favorite'
             ),
         )
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
 
     def __str__(self):
         return f'{self.user} добавил {self.recipe} в избранное'
@@ -193,6 +205,8 @@ class ShoppingCart(models.Model):
                 name='unique_recipe'
             ),
         )
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
 
     def __str__(self):
         return f'{self.user} добавил {self.recipe} в список покупок'
