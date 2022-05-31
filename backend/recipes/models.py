@@ -32,6 +32,9 @@ class Tag(models.Model):
                 name='unique_name_slug',
             ),
         )
+    
+    def __str__(self):
+        return self.name
 
 
 class Ingredient(models.Model):
@@ -129,7 +132,7 @@ class IngredientsInRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredient_recipe',
+        related_name='ingredients_list',
         verbose_name='Ингредиенты',
         help_text='Ингредиенты для рецепта')
     amount = models.PositiveIntegerField(
@@ -141,7 +144,7 @@ class IngredientsInRecipe(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=('recipe', 'ingredient',),
+                fields=('ingredient', 'recipe'),
                 name='unique_ingred_recipe'
             ),
         )

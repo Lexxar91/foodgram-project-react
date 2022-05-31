@@ -1,6 +1,7 @@
-from django.db.models import Sum
+from django.db.models import Exists, OuterRef, Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from requests import request
 from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import status, views, viewsets
@@ -53,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=('post', 'delete'),
+        methods=('POST', 'DELETE'),
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
@@ -63,7 +64,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=('post', 'delete'),
+        methods=('POST', 'DELETE'),
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
@@ -100,7 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'ingredient__name'
         ).annotate(ingredient_total=Sum('amount'))
         return convert_txt(ingredients)
-
+    
 
 class SubscriptionViewSet(ListAPIView):
     serializer_class = SubscriptionSerializer
