@@ -90,7 +90,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField()
     measurement_unit = serializers.ReadOnlyField()
     amount = serializers.ReadOnlyField()
-    
+
     class Meta:
         model = IngredientsInRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount',)
@@ -159,7 +159,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
             'user',
             'author',
         )
-    
+
     def to_representation(self, instance):
         request = self.context.get('request')
         context = {'request': request}
@@ -179,8 +179,8 @@ class SubscribeSerializer(serializers.ModelSerializer):
             )
         if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
-            'Вы уже подписаны на этого пользователя!'
-        )
+                'Вы уже подписаны на этого пользователя!'
+            )
         return data
 
     def create(self, validated_data):
@@ -206,7 +206,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     recipes = serializers.SerializerMethodField(method_name='get_recipes')
     recipes_count = serializers.SerializerMethodField(
         method_name='get_recipes_count')
-   
+
     class Meta:
         model = User
         fields = (
@@ -225,7 +225,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         if not user.is_authenticated:
             return False
         return Follow.objects.filter(user=user).exists()
-        
+
     def get_recipes(self, obj):
         request = self.context['request']
         limit = int(request.query_params.get('recipes_limit', 3))
