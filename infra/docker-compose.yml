@@ -17,8 +17,6 @@ services:
   backend:
     image: lexxar91/foodgram_backend:latest
     restart: always
-    expose:
-      - 8000
     volumes:
       - static_files:/app/static/
       - media_files:/app/media/
