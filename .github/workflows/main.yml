@@ -64,8 +64,8 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH }}
         passphrase: ${{ secrets.PASSPHRASE }} 
+        stack_file_name: docker-compose.yml
         script: |
-          cd foodgram-project-react/infra
           sudo docker pull lexxar91/foodgram_backend:latest
           sudo docker pull lexxar91/foodgram_frontend:latest
           sudo docker-compose stop
