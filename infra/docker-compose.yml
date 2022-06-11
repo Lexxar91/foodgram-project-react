@@ -15,7 +15,8 @@ services:
       - ../frontend/:/app/result_build/
   
   backend:
-    image: lexxar91/foodgram_backend:latest
+    build: ../backend
+    #image: lexxar91/foodgram_backend:latest
     restart: always
     volumes:
       - static_files:/app/static/

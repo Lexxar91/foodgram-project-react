@@ -48,9 +48,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'djoser',
-    'recipes.apps.RecipesConfig',
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig',
+    'recipes',
+    'users',
+    'tags',
 ]
 
 MIDDLEWARE = [
@@ -146,14 +146,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ),
+    ],
     'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend'],
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ]
 }
 
 DJOSER = {
@@ -164,8 +165,8 @@ DJOSER = {
     'HIDE_USERS': False,
     'SERIALIZERS': {
 
-        'user': 'api.serializers.CurrentUserSerializer',
-        'current_user': 'api.serializers.CurrentUserSerializer',
+        'user': 'users.serializers.CurrentUserSerializer',
+        'current_user': 'users.serializers.CurrentUserSerializer',
     },
     'PERMISSIONS': {
         'activation': ['rest_framework.permissions.AllowAny'],
@@ -182,6 +183,8 @@ DJOSER = {
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
     }
 }
+
+
 SHOPPING_CART_FILE_NAME = 'shopping_list.txt'
 
 # Минимальное количество символов для username
@@ -218,3 +221,11 @@ MISSING_USERNAME = 'Для аутентификации требуется вв�
 MISSING_EMAIL = 'Для авторизации требуется ввести электронную почту'
 
 NOT_NAME_FOR_THIS_COLOR = 'Для этого цвета нет имени'
+
+MIN_COOK_TIME = 1
+
+THE_FIELD_WITH_INGREDIENTS_CANNOT_BE_EMPTY = 'Поле с ингредиентами не может быть пустым'
+
+NOT_REPEATS_INGREDIENTS = 'В рецепте не должно быть повторяющихся ингредиентов'
+
+MUST_BE_INTEGER = 'Количество ингредиентов должно быть целым числом'

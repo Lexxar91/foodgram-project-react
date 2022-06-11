@@ -6,25 +6,12 @@ class User(AbstractUser):
     email = models.EmailField(
         unique=True,
         max_length=254,
-        verbose_name='Почта',
+        verbose_name='email',
         help_text='Введите адрес электронной почты'
-    )
-    first_name = models.CharField(
-        verbose_name='Имя',
-        max_length=30,
-    )
-    last_name = models.CharField(
-        verbose_name='Фамилия',
-        max_length=150,
     )
 
     USERNAME_FIELD = 'email'
-
-    REQUIRED_FIELDS = (
-        'username',
-        'first_name',
-        'last_name',
-    )
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -38,37 +25,32 @@ class User(AbstractUser):
         )
 
     def __str__(self):
-        return f'{self.username}'
+        return self.username
 
 
 class Follow(models.Model):
     user = models.ForeignKey(
         User,
-        related_name='follower',
         on_delete=models.CASCADE,
+        related_name='follower',
         verbose_name='Подписчик',
-        help_text='Подписчик'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='Автор постов',
-        help_text='Автор постов'
+        verbose_name='Отслеживаемый автор'
     )
 
     class Meta:
-        models.UniqueConstraint(
-            fields=('user', 'author',),
-            name='unique_follow',
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'author'),
+                name='unique_following'
+            ),
         )
-        models.CheckConstraint(
-            check=models.Q(user=models.F('user_author')),
-            name='check_user',
-        ),
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-    
+
     def __str__(self):
-        return (f'{self.user.username} подписывается на автора '
-                f'{self.author.username}')
+        return f'{self.user} подписался {self.author}'
