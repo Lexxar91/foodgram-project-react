@@ -9,7 +9,11 @@ class RecipeAdmin(admin.ModelAdmin):
         'name',
         'author',
     )
-    search_fields = ('name',)
+    search_fields = (
+        'name',
+        'author__username',
+        'author__email',
+    )
     readonly_fields = ('favorite_count',)
     list_filter = ('author', 'name', 'tags',)
     
@@ -22,20 +26,31 @@ class IngredientAdmin(admin.ModelAdmin):
         'name',
         'measurement_unit'
     )
-    search_fields = ('name',)
-    list_filter = ('name',)
+    search_fields = ('measurement_unit',)
+    list_filter = ('measurement_unit',)
 
 
 class IngredientsInRecipeAdmin(admin.ModelAdmin):
     list_display = ('recipe', 'ingredient', 'amount',)
+    search_fields = ('recipe__name', 'ingredient__name',)
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
+    search_fields = (
+        'user__username',
+        'user__email',
+        'recipe__name',
+    )
 
 
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
+    search_fields = (
+        'user__username',
+        'user__email',
+        'recipe__name',
+    )
 
 
 admin.site.register(Recipe, RecipeAdmin)
