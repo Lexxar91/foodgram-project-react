@@ -10,13 +10,24 @@ from recipes.models import (Favorite, Ingredient, IngredientsInRecipe, Recipe,
 
 
 class IngredientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Ingredient.
 
+    Атрибуты:
+        Meta (class): Класс Meta с информацией о модели и полях, которые следует сериализовать.
+    """
     class Meta:
         model = Ingredient
         fields = '__all__'
 
-
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели IngredientsInRecipe.
+
+    Атрибуты:
+        Meta (class): Класс Meta с информацией о модели и полях, которые следует сериализовать.
+        validators (tuple): Валидаторы, включая уникальность.
+    """
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
@@ -37,8 +48,13 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     def __str__(self):
         return f'{self.ingredient} в {self.recipe}'
 
-
 class AddIngredientSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для добавления ингредиентов в рецепт.
+
+    Атрибуты:
+        Meta (class): Класс Meta с информацией о модели и полях, которые следует сериализовать.
+    """
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     amount = serializers.IntegerField()
 
@@ -46,8 +62,21 @@ class AddIngredientSerializer(serializers.ModelSerializer):
         model = IngredientsInRecipe
         fields = ('id', 'amount')
 
-
 class RecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Recipe.
+
+    Атрибуты:
+        author (CurrentUserSerializer): Сериализатор для текущего автора рецепта.
+        tags (TagField): Поле для сериализации тегов.
+        ingredients (IngredientInRecipeSerializer): Сериализатор для ингредиентов в рецепте.
+        is_favorited (SerializerMethodField): Поле для определения, добавлен ли рецепт в избранное.
+        is_in_shopping_cart (SerializerMethodField): Поле для определения, добавлен ли рецепт в корзину.
+
+    Атрибуты Meta:
+        model (class): Модель, которую сериализуем.
+        fields (tuple): Поля модели, которые следует сериализовать.
+    """
     author = users.CurrentUserSerializer()
     tags = TagField(
         slug_field='id', queryset=Tag.objects.all(), many=True
@@ -91,8 +120,27 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, obj):
         return self.in_list(obj, ShoppingCart)
 
-
 class AddRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания и обновления рецепта.
+
+    Атрибуты:
+        tags (PrimaryKeyRelatedField): Поле для сериализации тегов.
+        ingredients (AddIngredientSerializer): Сериализатор для ингредиентов.
+        image (Base64ImageField): Поле для загрузки изображения блюда.
+
+    Методы:
+        to_representation(self, instance): Преобразует объект рецепта в представление.
+        create_ingredients(self, ingredients, recipe): Создает связи между рецептом и ингредиентами.
+        create(self, validated_data): Создает новый рецепт и связи с ингредиентами и тегами.
+        update(self, instance, validated_data): Обновляет существующий рецепт и связи с ингредиентами и тегами.
+        validate(self, data): Проверяет корректность данных перед созданием рецепта.
+        validate_cooking_time(self, data): Проверяет корректность времени приготовления.
+
+    Метаданные:
+        model (class): Модель, которую сериализуем.
+        fields (tuple): Поля модели, которые следует сериализовать.
+    """
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True
@@ -123,7 +171,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
                 recipe=recipe,
                 ingredient=ingredient,
                 amount=amount
-        )
+            )
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
@@ -175,9 +223,14 @@ class AddRecipeSerializer(serializers.ModelSerializer):
             )
         return data
 
-
 class ShortRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для представления краткой информации о рецепте.
 
+    Метаданные:
+        model (class): Модель, которую сериализуем.
+        fields (tuple): Поля модели, которые следует сериализовать.
+    """
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')

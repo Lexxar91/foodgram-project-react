@@ -3,6 +3,24 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """
+    Расширенная модель пользователя.
+
+    Атрибуты:
+        email (str): Адрес электронной почты пользователя (уникальное поле).
+        USERNAME_FIELD (str): Поле, используемое для аутентификации (в данном случае - email).
+        REQUIRED_FIELDS (list): Список обязательных полей при создании пользователя.
+
+    Мета:
+        verbose_name (str): Название модели в единственном числе.
+        verbose_name_plural (str): Название модели во множественном числе.
+        ordering (tuple): Порядок сортировки объектов модели (по умолчанию - по username).
+        constraints (tuple): Ограничения базы данных (уникальное сочетание username и email).
+
+    Методы:
+        __str__(): Возвращает строковое представление объекта пользователя.
+
+    """
     email = models.EmailField(
         unique=True,
         max_length=254,
@@ -29,6 +47,22 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+    """
+    Модель для хранения информации о подписках пользователей.
+
+    Атрибуты:
+        user (User): Подписчик.
+        author (User): Отслеживаемый автор.
+
+    Мета:
+        constraints (tuple): Ограничения базы данных (уникальная подписка).
+        verbose_name (str): Название модели в единственном числе.
+        verbose_name_plural (str): Название модели во множественном числе.
+
+    Методы:
+        __str__(): Возвращает строковое представление объекта подписки.
+
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

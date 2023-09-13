@@ -19,6 +19,16 @@ from recipes.utils import convert_txt
 
 
 class IngredientViewSet(RetrieveListMixins):
+    """
+    ViewSet для ингредиентов.
+
+    Атрибуты:
+        queryset (QuerySet): Запрос для выборки ингредиентов из базы данных.
+        serializer_class (Serializer): Сериализатор для ингредиентов.
+        permission_classes (tuple): Кортеж с классами разрешений доступа.
+        filterset_class (FilterSet): Фильтр для ингредиентов.
+
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
@@ -26,6 +36,17 @@ class IngredientViewSet(RetrieveListMixins):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet для рецептов.
+
+    Атрибуты:
+        queryset (QuerySet): Запрос для выборки рецептов из базы данных.
+        permission_classes (tuple): Кортеж с классами разрешений доступа.
+        pagination_class (Pagination): Класс пагинации для результатов запросов.
+        filter_backends (tuple): Кортеж с бэкендами фильтрации.
+        filterset_class (FilterSet): Фильтр для рецептов.
+
+    """
     queryset = Recipe.objects.all()
     permission_classes = (IsOwnerOrReadOnly,)
     pagination_class = CustomPagination
@@ -47,6 +68,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
+        """
+        Добавление или удаление рецепта из избранного пользователя.
+
+        Args:
+            request (Request): Запрос.
+            pk (int): Идентификатор рецепта.
+
+        Returns:
+            Response: Ответ с результатом операции.
+
+        """
         if request.method == 'POST':
             return self.add_recipe(Favorite, request, pk)
         else:
@@ -57,6 +89,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
+        """
+        Загрузка списка покупок в виде текстового файла.
+
+        Args:
+            request (Request): Запрос.
+
+        Returns:
+            Response: Текстовый файл с списком покупок.
+
+        """
         ingredients = IngredientsInRecipe.objects.filter(
             recipe__shopping_cart__user=request.user
         ).values(
@@ -72,6 +114,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
+        """
+        Добавление или удаление рецепта из списка покупок пользователя.
+
+        Args:
+            request (Request): Запрос.
+            pk (int): Идентификатор рецепта.
+
+        Returns:
+            Response: Ответ с результатом операции.
+
+        """
         if request.method == 'POST':
             return self.add_recipe(ShoppingCart, request, pk)
         else:

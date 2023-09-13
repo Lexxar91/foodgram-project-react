@@ -6,10 +6,18 @@ from users.models import User
 
 
 class Ingredient(models.Model):
+    """
+    Модель для представления ингредиента.
+
+    Атрибуты:
+        name (CharField): Название ингредиента.
+        measurement_unit (CharField): Единица измерения ингредиента.
+    """
+
     name = models.CharField(
         max_length=255,
         db_index=True,
-        verbose_name='Название Ингридиента',
+        verbose_name='Название Ингредиента',
         help_text='Введите название ингредиента'
     )
     measurement_unit = models.CharField(
@@ -32,8 +40,21 @@ class Ingredient(models.Model):
     def __str__(self):
         return self.name
 
-
 class Recipe(models.Model):
+    """
+    Модель для представления рецепта блюда.
+
+    Атрибуты:
+        name (CharField): Название рецепта.
+        author (ForeignKey): Автор рецепта.
+        image (ImageField): Изображение блюда.
+        text (TextField): Описание рецепта.
+        tags (ManyToManyField): Теги, связанные с рецептом.
+        ingredients (ManyToManyField): Ингредиенты, связанные с рецептом.
+        cooking_time (PositiveSmallIntegerField): Время приготовления.
+        pub_date (DateTimeField): Дата публикации рецепта.
+    """
+
     name = models.CharField(
         max_length=200,
         verbose_name='Имя рецепта',
@@ -95,8 +116,16 @@ class Recipe(models.Model):
     def __str__(self):
         return self.text[:15]
 
-
 class IngredientsInRecipe(models.Model):
+    """
+    Модель для представления связи между рецептом и ингредиентами.
+
+    Атрибуты:
+        recipe (ForeignKey): Рецепт, к которому относится ингредиент.
+        ingredient (ForeignKey): Ингредиент, связанный с рецептом.
+        amount (PositiveIntegerField): Количество ингредиента в рецепте.
+    """
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -113,8 +142,12 @@ class IngredientsInRecipe(models.Model):
         'Количество',
         validators=(
             MinValueValidator(
-                1, 'Мы же не воздух собираемся готовить?'), MaxValueValidator(
-                1000, 'Где же взять столько денег на такое блюдо?'))
+                1, 'Мы же не воздух собираемся готовить?'
+            ),
+            MaxValueValidator(
+                1000, 'Где же взять столько денег на такое блюдо?'
+            )
+        )
     )
 
     class Meta:
@@ -130,8 +163,15 @@ class IngredientsInRecipe(models.Model):
     def __str__(self):
         return f'{self.recipe} и {self.ingredient}'
 
-
 class Favorite(models.Model):
+    """
+    Модель для представления избранных рецептов пользователя.
+
+    Атрибуты:
+        user (ForeignKey): Пользователь, добавляющий в избранное.
+        recipe (ForeignKey): Рецепт, добавленный в избранное.
+    """
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -160,8 +200,19 @@ class Favorite(models.Model):
     def __str__(self):
         return f'{self.user} добавил {self.recipe} в избранное'
 
-
 class ShoppingCart(models.Model):
+    """
+    Модель для представления списка покупок пользователя.
+
+    Атрибуты:
+        user (ForeignKey): Пользователь, которому принадлежит список покупок.
+        recipe (ForeignKey): Рецепт, добавленный в список покупок.
+
+    Метаданные:
+        constraints (tuple): Уникальное ограничение, чтобы предотвратить дублирование записей.
+        verbose_name (str): Имя модели в единственном числе.
+        verbose_name_plural (str): Имя модели во множественном числе.
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
